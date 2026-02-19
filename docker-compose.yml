@@ -1,0 +1,26 @@
+services:
+  mock-monitoring:
+    build:
+      context: ./mock_monitoring
+      dockerfile: Dockerfile
+    container_name: kozak-mock-monitoring
+    ports:
+      - "8765:8765"
+    # Без volumes - фейковий моніторинг статичний
+
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: kozak-agent
+    env_file:
+      - .env
+    environment:
+      - MONITORING_URL=ws://mock-monitoring:8765
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Авторелад при зміні коду під час розробки
+      - ./agent:/app
+    depends_on:
+      - mock-monitoring
+    restart: unless-stopped
